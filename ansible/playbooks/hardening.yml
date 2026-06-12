@@ -1,0 +1,71 @@
+---
+- name: Basic server hardening
+  hosts: all
+  become: true
+  tasks:
+    - name: Disable root login via SSH
+      lineinfile:
+        path: /etc/ssh/sshd_config
+        regexp: "^PermitRootLogin"
+        line: "PermitRootLogin no"
+      notify: restart sshd
+
+    - name: Disable password auth
+      lineinfile:
+        path: /etc/ssh/sshd_config
+        regexp: "^PasswordAuthentication"
+        line: "PasswordAuthentication no"
+      notify: restart sshd
+
+    - name: Install and enable UFW
+      apt:
+        name: ufw
+        state: present
+
+    - name: Allow SSH
+      ufw:
+        rule: allow
+        port: "22"
+        proto: tcp
+
+    - name: Allow HTTP
+      ufw:
+        rule: allow
+        port: "80"
+        proto: tcp
+
+    - name: Allow HTTPS
+      ufw:
+        rule: allow
+        port: "443"
+        proto: tcp
+
+    - name: Allow k3s API
+      ufw:
+        rule: allow
+        port: "6443"
+        proto: tcp
+
+    - name: Enable UFW
+      ufw:
+        state: enabled
+        policy: deny
+
+    - name: Set up automatic security updates
+      apt:
+        name: unattended-upgrades
+        state: present
+
+    - name: Enable unattended upgrades
+      copy:
+        content: |
+          APT::Periodic::Update-Package-Lists "1";
+          APT::Periodic::Unattended-Upgrade "1";
+        dest: /etc/apt/apt.conf.d/20auto-upgrades
+        mode: "0644"
+
+  handlers:
+    - name: restart sshd
+      systemd:
+        name: sshd
+        state: restarted

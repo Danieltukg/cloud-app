@@ -1,0 +1,25 @@
+---
+- name: Configure users
+  hosts: all
+  become: true
+  tasks:
+    - name: Create deploy user
+      user:
+        name: deploy
+        shell: /bin/bash
+        groups: sudo
+        append: true
+        create_home: true
+
+    - name: Set up authorized keys for deploy
+      authorized_key:
+        user: deploy
+        key: "{{ lookup('file', '~/.ssh/id_rsa.pub') }}"
+        state: present
+
+    - name: Allow deploy user passwordless sudo
+      copy:
+        content: "deploy ALL=(ALL) NOPASSWD:ALL\n"
+        dest: /etc/sudoers.d/deploy
+        mode: "0440"
+        validate: "visudo -cf %s"
