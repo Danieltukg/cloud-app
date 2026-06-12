@@ -1,0 +1,49 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: app
+  namespace: production
+  labels:
+    app: cloud-deploy
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: cloud-deploy
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  template:
+    metadata:
+      labels:
+        app: cloud-deploy
+    spec:
+      containers:
+        - name: app
+          image: registry.gitlab.com/your-group/cloud-deploy-platform/app:latest
+          ports:
+            - containerPort: 8080
+          env:
+            - name: APP_VERSION
+              value: "0.1.0"
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: 300m
+              memory: 256Mi
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8080
+            initialDelaySeconds: 10
+            periodSeconds: 15
+          readinessProbe:
+            httpGet:
+              path: /ready
+              port: 8080
+            initialDelaySeconds: 5
+            periodSeconds: 10
