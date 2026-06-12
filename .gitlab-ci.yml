@@ -1,0 +1,62 @@
+stages:
+  - lint
+  - test
+  - build
+  - deploy
+
+variables:
+  DOCKER_IMAGE: $CI_REGISTRY_IMAGE/app
+  DOCKER_TAG: $CI_COMMIT_SHORT_SHA
+  KUBE_NAMESPACE: production
+
+lint:
+  stage: lint
+  image: python:3.12-slim
+  before_script:
+    - pip install flake8
+  script:
+    - flake8 app/ --max-line-length=120 --ignore=E501
+  only:
+    - merge_requests
+    - main
+
+test:
+  stage: test
+  image: python:3.12-slim
+  before_script:
+    - pip install -r app/requirements.txt
+    - pip install pytest
+  script:
+    - cd app && pytest -v
+  only:
+    - merge_requests
+    - main
+
+build:
+  stage: build
+  image: docker:24.0
+  services:
+    - docker:24.0-dind
+  before_script:
+    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+  script:
+    - docker build -t $DOCKER_IMAGE:$DOCKER_TAG -t $DOCKER_IMAGE:latest app/
+    - docker push $DOCKER_IMAGE:$DOCKER_TAG
+    - docker push $DOCKER_IMAGE:latest
+  only:
+    - main
+
+deploy:
+  stage: deploy
+  image: bitnami/kubectl:latest
+  before_script:
+    - echo "$KUBECONFIG_DATA" | base64 -d > /tmp/kubeconfig
+    - export KUBECONFIG=/tmp/kubeconfig
+  script:
+    - kubectl set image deployment/app app=$DOCKER_IMAGE:$DOCKER_TAG -n $KUBE_NAMESPACE
+    - kubectl rollout status deployment/app -n $KUBE_NAMESPACE --timeout=300s
+  only:
+    - main
+  when: on_success
+  environment:
+    name: production
