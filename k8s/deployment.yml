@@ -22,7 +22,7 @@ spec:
     spec:
       containers:
         - name: app
-          image: registry.gitlab.com/your-group/cloud-deploy-platform/app:latest
+          image: cr.yandex/crpv03vst0env8qnlun5/cloud-app:latest
           ports:
             - containerPort: 8080
           env:

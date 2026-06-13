@@ -4,9 +4,8 @@ metadata:
   name: app-ingress
   namespace: production
   annotations:
-    nginx.ingress.kubernetes.io/rewrite-target: /
 spec:
-  ingressClassName: nginx
+  ingressClassName: traefik
   rules:
     - host: app.example.com
       http:
