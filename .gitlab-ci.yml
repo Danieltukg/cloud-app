@@ -15,7 +15,7 @@ lint:
   before_script:
     - pip install flake8
   script:
-    - flake8 app/ --max-line-length=120 --ignore=E501
+    - flake8 app/ --max-line-length=120 --ignore=E501,W503
   only:
     - merge_requests
     - main

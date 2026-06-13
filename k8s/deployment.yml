@@ -22,12 +22,19 @@ spec:
     spec:
       containers:
         - name: app
-          image: cr.yandex/crpv03vst0env8qnlun5/cloud-app:latest
+          image: registry.gitlab.com/your-group/cloud-app/app:latest
           ports:
-            - containerPort: 8080
+            - containerPort: 5000
           env:
-            - name: APP_VERSION
-              value: "0.1.0"
+            - name: DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: app-secrets
+                  key: database-url
+            - name: AUTO_CREATE_DB
+              value: "true"
+            - name: AUTO_SEED
+              value: "true"
           resources:
             requests:
               cpu: 100m
@@ -37,13 +44,13 @@ spec:
               memory: 256Mi
           livenessProbe:
             httpGet:
-              path: /health
-              port: 8080
-            initialDelaySeconds: 10
+              path: /api/health
+              port: 5000
+            initialDelaySeconds: 15
             periodSeconds: 15
           readinessProbe:
             httpGet:
-              path: /ready
-              port: 8080
-            initialDelaySeconds: 5
+              path: /api/health
+              port: 5000
+            initialDelaySeconds: 10
             periodSeconds: 10

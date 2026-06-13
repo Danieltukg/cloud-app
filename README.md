@@ -2,23 +2,38 @@
 
 Платформа для деплоя микросервисов в k3s кластер с CI/CD, IaC и мониторингом.
 
+## Приложение — VERTEX
+
+Интерактивный атлас горных вершин мира: Flask + PostgreSQL + JS фронтенд.
+API для CRUD вершин, фильтрация, поиск, статистика.
+
 ## Что тут есть
 
-- **app/** — простой Flask-сервис с health/ready эндпоинтами
+- **app/** — Flask-бэкенд + статический фронт, PostgreSQL, Dockerfile
 - **terraform/** — инфраструктура в Yandex Cloud (VPC, compute instances)
 - **ansible/** — настройка серверов: Docker, пользователи, hardening
-- **k8s/** — манифесты: Deployment с rolling update, Service, Ingress, HPA
+- **k8s/** — Deployment (app + postgres), Service, Ingress, HPA, Secrets
 - **monitoring/** — Prometheus + Node Exporter + Grafana с дашбордами и алертами
 - **.gitlab-ci.yml** — пайплайн: lint -> test -> build -> deploy
 
 ## Быстрый старт
+
+### Локально (без инфраструктуры)
+
+```bash
+cd app
+pip install -r requirements.txt
+python app.py
+```
+Откроется на http://localhost:5000 с SQLite базой и начальными данными.
+
+### Полный деплой
 
 ### 1. Инфраструктура
 
 ```bash
 cd terraform
 cp terraform.tfvars.example terraform.tfvars
-# заполнить terraform.tfvars своими данными
 terraform init
 terraform plan
 terraform apply
@@ -28,23 +43,22 @@ terraform apply
 
 ```bash
 cd ansible
-# прописать IP из terraform output в inventory/hosts.yml
 ansible-playbook playbooks/site.yml
 ```
 
 ### 3. k3s кластер
 
 ```bash
-# на мастере
 bash scripts/setup-k3s.sh
-# на воркерах выполнить команду из вывода скрипта
 ```
 
 ### 4. Деплой приложения
 
 ```bash
-cd scripts
-bash deploy.sh
+cp k8s/secrets.yml.example k8s/secrets.yml
+# поменяй пароли в secrets.yml
+kubectl apply -f k8s/secrets.yml
+bash scripts/deploy.sh
 ```
 
 ### 5. Мониторинг
@@ -54,7 +68,7 @@ cd monitoring
 docker compose -f docker-compose.monitoring.yml up -d
 ```
 
-Grafana будет на порту 3000 (admin/changeme), Prometheus на 9090.
+Grafana на порту 3000 (admin/changeme), Prometheus на 9090.
 
 ## CI/CD
 

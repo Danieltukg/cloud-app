@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>VERTEX — атлас вершин</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,500;9..144,600&family=Spline+Sans:wght@400;500;600&family=Spline+Sans+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+  <!-- Топографический фон -->
+  <div class="topo" aria-hidden="true"></div>
+  <div class="grain" aria-hidden="true"></div>
+
+  <header class="masthead">
+    <div class="masthead__brand">
+      <span class="masthead__mark">▲</span>
+      <span class="masthead__name">VERTEX</span>
+    </div>
+    <nav class="masthead__nav">
+      <span class="masthead__tag">атлас высочайших вершин мира</span>
+      <span class="masthead__status" id="status">● подключение…</span>
+    </nav>
+  </header>
+
+  <section class="hero">
+    <p class="hero__eyebrow">Каталог · Python · PostgreSQL · Docker</p>
+    <h1 class="hero__title">
+      Туда, где<br /><em>заканчивается</em> воздух
+    </h1>
+    <p class="hero__lede">
+      Интерактивный атлас горных вершин с полным циклом данных — от базы
+      PostgreSQL через REST API на Flask до этой страницы. Фильтруй, ищи,
+      добавляй свои вершины.
+    </p>
+
+    <div class="stats" id="stats">
+      <div class="stat"><span class="stat__num" data-key="total">—</span><span class="stat__label">вершин в базе</span></div>
+      <div class="stat"><span class="stat__num" data-key="highest">—</span><span class="stat__label">высшая, м</span></div>
+      <div class="stat"><span class="stat__num" data-key="avg_height">—</span><span class="stat__label">средняя, м</span></div>
+      <div class="stat"><span class="stat__num" data-key="countries">—</span><span class="stat__label">стран</span></div>
+    </div>
+  </section>
+
+  <main class="content">
+    <div class="toolbar">
+      <div class="toolbar__search">
+        <input type="search" id="search" placeholder="Поиск по названию или описанию…" autocomplete="off" />
+      </div>
+      <div class="toolbar__filters">
+        <select id="filter-country"><option value="">Все страны</option></select>
+        <select id="filter-range"><option value="">Все хребты</option></select>
+        <select id="sort">
+          <option value="height_desc">Сначала высокие</option>
+          <option value="height_asc">Сначала низкие</option>
+          <option value="name">По названию</option>
+          <option value="year">По году восхождения</option>
+        </select>
+        <button class="btn btn--accent" id="add-btn">+ Вершина</button>
+      </div>
+    </div>
+
+    <div class="grid" id="grid"></div>
+    <p class="empty" id="empty" hidden>Ничего не найдено — попробуй изменить фильтры.</p>
+  </main>
+
+  <footer class="footer">
+    <span>VERTEX — учебный фуллстек-стенд</span>
+    <span class="footer__dot">·</span>
+    <a href="/api/peaks" target="_blank">REST API</a>
+    <span class="footer__dot">·</span>
+    <a href="/api/health" target="_blank">health</a>
+  </footer>
+
+  <!-- Модалка добавления/редактирования -->
+  <div class="modal" id="modal" hidden>
+    <div class="modal__backdrop" data-close></div>
+    <div class="modal__card" role="dialog" aria-modal="true">
+      <h2 class="modal__title" id="modal-title">Новая вершина</h2>
+      <div class="form">
+        <label>Название <input id="f-name" type="text" /></label>
+        <div class="form__row">
+          <label>Высота, м <input id="f-height" type="number" min="1" max="8999" /></label>
+          <label>Год восхождения <input id="f-year" type="number" /></label>
+        </div>
+        <div class="form__row">
+          <label>Страна <input id="f-country" type="text" /></label>
+          <label>Хребет <input id="f-range" type="text" /></label>
+        </div>
+        <label>Сложность
+          <select id="f-difficulty">
+            <option>Низкая</option><option>Средняя</option>
+            <option>Высокая</option><option>Очень высокая</option>
+            <option>Экстремальная</option>
+          </select>
+        </label>
+        <label>Описание <textarea id="f-summary" rows="3"></textarea></label>
+        <p class="form__error" id="form-error" hidden></p>
+        <div class="form__actions">
+          <button class="btn" data-close>Отмена</button>
+          <button class="btn btn--accent" id="save-btn">Сохранить</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/app.js"></script>
+</body>
+</html>
